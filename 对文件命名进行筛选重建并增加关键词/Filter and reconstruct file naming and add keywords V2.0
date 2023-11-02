@@ -1,0 +1,97 @@
+# 统一文件名数据格式
+
+import os
+import re
+from collections import Counter
+
+
+# def remove_wallpaper_from_name(filename):
+#     """删除文件名中的“Wallpaper”字符及其相邻的连接符号"""
+#     return re.sub(r'[-_]?[Ww]allpaper[-_]?', '', filename)
+#
+#
+# def remove_date_patterns(filename):
+#     """删除文件名中的日期模式，如2018_09_, 2018-09- 等以及单独的年份"""
+#     patterns = [
+#         r'^\d{4}[-_]',  # 开头的年份，如2023-
+#         r'\d{4}_\d{1,2}_',
+#         r'\d{4}_\d{1,2}',
+#         r'\d{4}-\d{1,2}-',
+#         r'\d{4}-\d{1,2}'
+#     ]
+#     for pattern in patterns:
+#         filename = re.sub(pattern, '', filename)
+#     return filename
+#
+#
+# def remove_resolution_patterns(filename):
+#     """删除文件名中的分辨率模式，如1280x720及其相邻的连接符"""
+#     return re.sub(r'[-_]?\d+x\d+[-_]?', '', filename)
+#
+#
+# def format_filename(filename):
+#     """将文件名格式化为“1-2-3-4”的形式"""
+#     words = filename.split('_')
+#     return '-'.join(words)
+#
+#
+# def remove_duplicate_words(filename):
+#     """删除文件名中的重复关键词或词缀"""
+#     words = filename.split('-')
+#     unique_words = list(dict.fromkeys(words))  # 使用字典来去除重复项
+#     return '-'.join(unique_words)
+#
+#
+# def rename_files_in_directory(directory_path):
+#     """重命名指定目录下的文件，根据给定的规则"""
+#     total_files = len([f for f in os.listdir(directory_path) if os.path.isfile(os.path.join(directory_path, f))])
+#     processed_files = 0
+#
+#     for filename in os.listdir(directory_path):
+#         original_file_path = os.path.join(directory_path, filename)
+#
+#         # 如果是文件夹，跳过
+#         if os.path.isdir(original_file_path):
+#             continue
+#
+#         # 获取文件的扩展名
+#         file_extension = os.path.splitext(filename)[1]
+#
+#         # 删除文件名中的“Wallpaper”字符及其连接符号
+#         new_name = remove_wallpaper_from_name(filename)
+#
+#         # 删除文件名中的日期模式
+#         new_name = remove_date_patterns(new_name)
+#
+#         # 删除文件名中的分辨率模式
+#         new_name = remove_resolution_patterns(new_name)
+#
+#         # 格式化文件名
+#         new_name = format_filename(new_name)
+#
+#         # 删除文件名中的重复关键词或词缀
+#         new_name = remove_duplicate_words(new_name)
+#
+#         # 检查新文件名是否已存在，如果存在则使用 `1(1)`、`1(2)` 等格式添加后缀
+#         counter = 1
+#         base_name = os.path.splitext(new_name)[0]
+#         while os.path.exists(os.path.join(directory_path, base_name + file_extension)):
+#             base_name = f"{os.path.splitext(new_name)[0]}({counter})"
+#             counter += 1
+#
+#         # 获取新文件的完整路径
+#         new_file_path = os.path.join(directory_path, base_name + file_extension)
+#
+#         # 重命名文件
+#         os.rename(original_file_path, new_file_path)
+#
+#         processed_files += 1
+#         print(f"已处理 {processed_files}/{total_files}。Renamed {filename} to {base_name + file_extension}")
+#
+#
+# # 从用户那里获取要重命名文件的目录路径
+# directory_path = input("请输入需要处理文件的路径: ")
+# rename_files_in_directory(directory_path)
+#
+# print("finish")
+
