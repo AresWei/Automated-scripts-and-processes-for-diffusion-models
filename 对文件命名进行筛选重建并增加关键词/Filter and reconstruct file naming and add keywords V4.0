@@ -1,0 +1,158 @@
+import os
+import re
+
+class FileNameProcessor:
+    def __init__(self, directory_path, use_folder_as_prefix=False):
+        self.directory_path = directory_path
+        self.use_folder_as_prefix = use_folder_as_prefix
+        self.folder_name = os.path.basename(directory_path).lower()
+
+    def replace_punctuation(self, filename):
+        punctuations = [';', ',', '!', '@', '#', '$', '%', '^', '&', '*', '+', '=', '|', ':', "'", '<', '>', '?', '/', ']', '[', '}', '{', '`', '~']
+        for punctuation in punctuations:
+            filename = filename.replace(punctuation, '_')
+        return filename
+
+    def remove_tag_prefix(self, filename):
+        return re.sub(r'^(tag|tags)[-_]', '', filename)
+
+    def remove_spaces(self, filename):
+        return filename.replace(' ', '')
+
+    def remove_wallpaper_from_name(self, filename):
+        return re.sub(r'[-_]?[Ww]allpaper[-_]?', '', filename)
+
+    def remove_date_patterns(self, filename):
+        patterns = [
+            r'^\d{4}[-_]',
+            r'\d{4}_\d{1,2}_',
+            r'\d{4}_\d{1,2}',
+            r'\d{4}-\d{1,2}-',
+            r'\d{4}-\d{1,2}'
+        ]
+        for pattern in patterns:
+            filename = re.sub(pattern, '', filename)
+        return filename
+
+    def remove_resolution_prefix(self, filename):
+        return re.sub(r'^[48]k[-_ ]?', '', filename, flags=re.IGNORECASE)
+
+    def remove_long_string(self, filename):
+        return re.sub(r'[-_ ]?[a-zA-Z0-9]{20,}[-_ ]?', '', filename)
+
+    def remove_leading_numbers(self, filename):
+        return re.sub(r'^\d+[-_]', '', filename)
+
+    def remove_trailing_numbers(self, filename):
+        return re.sub(r'[-_]\d+(\.\w+)?$', r'\1', filename)
+
+    def format_filename(self, filename):
+        words = filename.split('-')
+        return '_'.join(words)
+
+    def remove_duplicate_words(self, filename):
+        words = filename.split('_')
+        unique_words = list(dict.fromkeys(words))
+        return '_'.join(unique_words)
+
+    def remove_duplicate_suffix(self, filename):
+        while re.search(r'\(\d+\)\(\d+\)', filename):
+            filename = re.sub(r'\((\d+)\)\(\d+\)', r'(\1)', filename)
+        return filename
+
+    def remove_single_occurrence_suffix(self, filename):
+        base_name, file_extension = os.path.splitext(filename)
+        if len([f for f in os.listdir(self.directory_path) if base_name in f]) == 1:
+            return re.sub(r'\(\d+\)', '', base_name) + file_extension
+        return filename
+
+    def remove_duplicate_extension(self, filename):
+        base_name, file_extension = os.path.splitext(filename)
+        if file_extension:  # 添加这个条件检查
+            if base_name.endswith(file_extension):
+                base_name = base_name.rsplit(file_extension, 1)[0]
+        return base_name + file_extension
+
+    def remove_duplicate_case_insensitive_words(self, filename):
+        words = filename.split('_')
+        lowercase_words = set([word.lower() for word in words])
+        new_words = []
+
+        for word in words:
+            if word.lower() in lowercase_words:
+                new_words.append(word.lower())
+                lowercase_words.remove(word.lower())
+            else:
+                new_words.append(word)
+
+        return '_'.join(new_words)
+
+    def ensure_unique_filename(self, base_name, file_extension):
+        counter = 1
+        new_name = base_name
+        while os.path.exists(os.path.join(self.directory_path, new_name + file_extension)):
+            new_name = f"{base_name}({counter})"
+            counter += 1
+        return new_name
+
+    def remove_specified_keywords(self, filename):
+        keywords = ['apple', 'image', 'images', 'hd', 'hq', '_s_', '_ss_', 'com']
+        pattern = re.compile(r'[-_]?(' + '|'.join(keywords) + r')[-_]?')
+        filename = re.sub(pattern, '_', filename)
+        # Ensure there's at least one underscore
+        if '_' not in filename:
+            filename = '_' + filename
+        return filename
+
+    def process(self):
+        total_files = len(
+            [f for f in os.listdir(self.directory_path) if os.path.isfile(os.path.join(self.directory_path, f))])
+        processed_files = 0
+
+        for filename in os.listdir(self.directory_path):
+            original_file_path = os.path.join(self.directory_path, filename)
+
+            if os.path.isdir(original_file_path):
+                continue
+
+            file_extension = os.path.splitext(filename)[1]
+
+            new_name = self.replace_punctuation(filename)
+            new_name = self.remove_tag_prefix(new_name)
+            new_name = self.remove_tag_prefix(new_name)
+            new_name = self.remove_wallpaper_from_name(new_name)
+            new_name = self.remove_date_patterns(new_name)
+            new_name = self.remove_resolution_prefix(new_name)
+            new_name = self.remove_long_string(new_name)
+            new_name = self.remove_leading_numbers(new_name)
+            new_name = self.remove_trailing_numbers(new_name)
+            new_name = self.format_filename(new_name)
+            new_name = self.remove_duplicate_words(new_name)
+            new_name = self.remove_duplicate_suffix(new_name)
+            new_name = self.remove_single_occurrence_suffix(new_name)
+            new_name = self.remove_duplicate_extension(new_name)
+            new_name = self.remove_duplicate_case_insensitive_words(new_name)
+            new_name = self.remove_specified_keywords(new_name)
+
+            if self.use_folder_as_prefix:
+                new_name = f"{self.folder_name}_{new_name}"
+
+            base_name = os.path.splitext(new_name)[0]
+            unique_name = self.ensure_unique_filename(base_name, file_extension)
+
+            new_file_path = os.path.join(self.directory_path, unique_name + file_extension)
+
+            os.rename(original_file_path, new_file_path)
+
+            processed_files += 1
+            print(f"已处理 {processed_files}/{total_files}。Renamed {filename} to {unique_name + file_extension}")
+
+if __name__ == "__main__":
+            directory_path = input("请输入需要处理文件的路径: ")
+            use_folder_as_prefix = input(
+             "是否将文件所在文件夹的小写英文名作为文件名前缀? (y/n): ").strip().lower() == 'y'
+
+            processor = FileNameProcessor(directory_path, use_folder_as_prefix)
+            processor.process()
+
+print("Finish!!!!!!")
