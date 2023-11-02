@@ -1,0 +1,100 @@
+import os
+import re
+
+
+class FileNameProcessor:
+    def __init__(self, directory_path, use_folder_as_prefix=False):
+        self.directory_path = directory_path
+        self.use_folder_as_prefix = use_folder_as_prefix
+        self.folder_name = os.path.basename(directory_path).lower()
+
+    def remove_wallpaper_from_name(self, filename):
+        return re.sub(r'[-_]?[Ww]allpaper[-_]?', '', filename)
+
+    def remove_date_patterns(self, filename):
+        patterns = [
+            r'^\d{4}[-_]',
+            r'\d{4}_\d{1,2}_',
+            r'\d{4}_\d{1,2}',
+            r'\d{4}-\d{1,2}-',
+            r'\d{4}-\d{1,2}'
+        ]
+        for pattern in patterns:
+            filename = re.sub(pattern, '', filename)
+        return filename
+
+    def remove_resolution_patterns(self, filename):
+        return re.sub(r'[-_]?\d+x\d+[-_]?', '', filename)
+
+    def remove_leading_numbers(self, filename):
+        return re.sub(r'^\d+[-_]', '', filename)
+
+    def format_filename(self, filename):
+        words = filename.split('_')
+        return '-'.join(words)
+
+    def remove_duplicate_words(self, filename):
+        words = filename.split('-')
+        unique_words = list(dict.fromkeys(words))
+        return '-'.join(unique_words)
+
+    def remove_suffix_numbers(self, filename):
+        # 如果文件夹中只有一个该文件，则移除文件名中的“(1)”, "(2)"等后缀
+        base_name, file_extension = os.path.splitext(filename)
+        if len([f for f in os.listdir(self.directory_path) if base_name in f]) == 1:
+            return re.sub(r'\(\d+\)', '', base_name) + file_extension
+        return filename
+
+    def get_unique_filename(self, base_name, file_extension):
+        counter = 1
+        new_name = base_name
+        while os.path.exists(os.path.join(self.directory_path, new_name + file_extension)):
+            if f"({counter})" in new_name:
+                new_name = new_name.rsplit(f"({counter})", 1)[0]
+                counter += 1
+            else:
+                new_name = f"{base_name}({counter})"
+                counter += 1
+        return new_name
+
+    def process(self):
+        total_files = len(
+            [f for f in os.listdir(self.directory_path) if os.path.isfile(os.path.join(self.directory_path, f))])
+        processed_files = 0
+
+        for filename in os.listdir(self.directory_path):
+            original_file_path = os.path.join(self.directory_path, filename)
+
+            if os.path.isdir(original_file_path):
+                continue
+
+            file_extension = os.path.splitext(filename)[1]
+
+            new_name = self.remove_wallpaper_from_name(filename)
+            new_name = self.remove_date_patterns(new_name)
+            new_name = self.remove_resolution_patterns(new_name)
+            new_name = self.remove_leading_numbers(new_name)
+            new_name = self.format_filename(new_name)
+            new_name = self.remove_duplicate_words(new_name)
+            new_name = self.remove_suffix_numbers(new_name)
+
+            if self.use_folder_as_prefix:
+                new_name = f"{self.folder_name}-{new_name}"
+
+            base_name = os.path.splitext(new_name)[0]
+            unique_name = self.get_unique_filename(base_name, file_extension)
+
+            new_file_path = os.path.join(self.directory_path, unique_name + file_extension)
+
+            os.rename(original_file_path, new_file_path)
+
+            processed_files += 1
+            print(f"已处理 {processed_files}/{total_files}。Renamed {filename} to {unique_name + file_extension}")
+
+
+if __name__ == "__main__":
+    directory_path = input("请输入需要处理文件的路径: ")
+    use_folder_as_prefix = input("是否将文件所在文件夹的小写英文名作为文件名前缀? (y/n): ").strip().lower() == 'y'
+
+    processor = FileNameProcessor(directory_path, use_folder_as_prefix)
+    processor.process()
