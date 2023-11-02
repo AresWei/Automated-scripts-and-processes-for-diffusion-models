@@ -8,4 +8,5 @@ All scripts are created based on python language. If you are a novice, please in
 python installation address：https://www.python.org/
 Find "Downloads", select the environment that suits you and click download (it is recommended to download the latest version)
 
-![image](https://github.com/AresWei/Automated-office/assets/87894592/b26f8f0b-701c-45f7-955b-95bc72fb61ae)
+![image](https://github.com/AresWei/Automated-office/assets/87894592/faffc46a-9eb2-4370-9fe3-d8cbe2a16533)
+
