@@ -1,0 +1,42 @@
+import os
+from PIL import Image
+from tqdm import tqdm
+
+SUPPORTED_FORMATS = ['.png', '.jpg', '.jpeg', '.bmp', '.gif', '.tiff', '.webp', '.ico', '.jfif', '.pjpeg', '.pjp']
+
+
+def convert_and_replace_images_recursively(source_folder, target_format):
+    # 获取所有子目录及文件
+    for subdir, _, files in os.walk(source_folder):
+        for file in tqdm(files, desc=f"Processing {subdir}", unit="file"):
+            # 检查是否为图片文件
+            file_extension = os.path.splitext(file.lower())[1]
+            if file_extension in SUPPORTED_FORMATS:
+                file_path = os.path.join(subdir, file)
+                # 打开图片
+                with Image.open(file_path) as img:
+                    # 获取不带扩展名的文件名
+                    base_name = os.path.splitext(file)[0]
+                    # 保存为新格式，确保质量为最大（如果支持）
+                    target_path = os.path.join(subdir, f"{base_name}.{target_format}")
+                    if target_format in ["jpeg", "jpg"]:
+                        img.save(target_path, "JPEG", quality=100)
+                    elif target_format == "png":
+                        img.save(target_path, "PNG", compress_level=0)
+                    elif target_format == "webp":
+                        img.save(target_path, "WEBP", quality=100)
+                    else:
+                        img.save(target_path)
+                # 删除原始文件
+                if file_path != target_path:
+                    os.remove(file_path)
+
+
+if __name__ == "__main__":
+    # 用户输入文件夹路径
+    folder_path = input("请输入图片所在的文件夹路径：")
+    # 用户输入目标格式
+    format_to_convert = input("请输入您想要转换成的图片格式（例如: png, jpg）：")
+
+    convert_and_replace_images_recursively(folder_path, format_to_convert)
+    print("转换完成!")
