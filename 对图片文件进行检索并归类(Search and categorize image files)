@@ -1,0 +1,101 @@
+import os
+import glob
+import shutil
+import pandas as pd
+import regex as re
+from concurrent.futures import ThreadPoolExecutor
+from tqdm import tqdm
+
+
+def search_images(root_folder):
+    """搜索指定文件夹下的所有图片"""
+    image_types = ["*.jpg", "*.jpeg", "*.png"]
+    images = []
+    for image_type in image_types:
+        images.extend(glob.glob(os.path.join(root_folder, '**', image_type), recursive=True))
+    return images
+
+
+def create_folder(folder):
+    """创建文件夹"""
+    if not os.path.exists(folder):
+        os.makedirs(folder, exist_ok=True)
+
+
+def move_image(image, destination_folder):
+    """移动图片到指定文件夹，并处理重名情况"""
+    destination_path = os.path.join(destination_folder, os.path.basename(image))
+    counter = 1
+    while os.path.exists(destination_path):
+        name, ext = os.path.splitext(os.path.basename(image))
+        destination_path = os.path.join(destination_folder, f"{name}_{counter}{ext}")
+        counter += 1
+    shutil.move(image, destination_path)
+
+
+def filter_and_move_images(image, keyword_folder_mapping, base_folder, search_target="image"):
+    """根据关键词筛选并移动图片"""
+    for keyword, folder in keyword_folder_mapping.items():
+        pattern = re.compile(rf"\b{re.escape(keyword)}\b", re.IGNORECASE)
+        full_folder_path = os.path.join(base_folder, folder)
+
+        # 根据用户选择确定搜索目标
+        target_name = os.path.basename(image) if search_target == "image" else os.path.basename(os.path.dirname(image))
+        if pattern.search(target_name.replace('_', ' ').replace('-', ' ')):
+            create_folder(full_folder_path)
+            move_image(image, full_folder_path)
+            return
+
+
+def get_keyword_folder_mapping(use_excel):
+    """从Excel或用户输入获取关键词和文件夹的映射"""
+    keyword_folder_mapping = {}
+    if use_excel.lower() == 'yes':
+        excel_path = input("请输入Excel文件路径：")
+        df = pd.read_excel(excel_path)
+        orientation = input("您想根据表格的“行”数据还是“列”数据作为标签或文件夹命名？(row/column): ").lower()
+        if orientation == 'row':
+            keyword_col = input("请输入作为提示词或标签的列名：")
+            folder_col = input("请输入作为文件夹名的列名：")
+            for index, row in df.iterrows():
+                keyword = str(row[keyword_col]).lower()  # 转换为小写
+                folder = str(row[folder_col]).lower()  # 转换为小写
+                keyword_folder_mapping[keyword] = folder
+        else:
+            for col in df.columns:
+                keywords = df[col].dropna().tolist()
+                for keyword in keywords:
+                    keyword_folder_mapping[str(keyword).lower()] = col.lower()  # 转换为小写
+    else:
+        input_string = input("请输入关键词和文件夹，格式为 'keyword1:folder1, keyword2:folder2, ...' ：")
+        pairs = [pair.split(':') for pair in input_string.split(',') if ':' in pair]
+        for pair in pairs:
+            if len(pair) != 2:
+                print(f"Warning: Skipping invalid input '{':'.join(pair)}'")
+                continue
+            keyword, folder = pair
+            keyword = keyword.strip().lower()  # 转换为小写
+            folder = folder.strip().lower()  # 转换为小写
+            keyword_folder_mapping[keyword] = folder
+    return keyword_folder_mapping
+
+
+def main():
+    root_folder = input("请输入根文件夹路径：")
+    all_images = search_images(root_folder)
+    base_folder = input("请输入基础文件夹路径（所有其他文件夹将在此路径下创建或查找）：")
+    use_excel = input("您是否想使用Excel表格来创建文件夹和作为提示词或标签？(yes/no): ")
+    keyword_folder_mapping = get_keyword_folder_mapping(use_excel)
+
+    # 用户选择根据文件夹命名还是图片命名进行检索
+    search_target = input("您想根据文件夹命名还是图片命名进行检索？(folder/image): ").lower()
+
+    with ThreadPoolExecutor() as executor:
+        list(tqdm(executor.map(
+            lambda image: filter_and_move_images(image, keyword_folder_mapping, base_folder, search_target),
+            all_images), total=len(all_images), desc="Filtering and Moving Images"))
+
+
+if __name__ == "__main__":
+    main()
+    print("Congratulations!!!!")
