@@ -1,4 +1,5 @@
 # Function: Crop all image files in the directory input by the user, and perform cropping according to the set logic
+
 from PIL import Image
 import os
 
