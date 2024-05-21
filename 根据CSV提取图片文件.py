@@ -23,8 +23,8 @@ except UnicodeDecodeError:
     except Exception as e:
         raise Exception(f"读取CSV文件时遇到错误: {e}")
 
-# 创建一个新的Excel工作簿和工作表，启用ZIP64扩展
-excel_output_path = 'NFT模型测试文档.xlsx'
+# 创建一个新的Excel工作簿和工作表，启用ZIP64扩展，excel_output_path参数可修改
+excel_output_path = '测试文档.xlsx'
 workbook = xlsxwriter.Workbook(excel_output_path, {'use_zip64': True})
 worksheet = workbook.add_worksheet()
 
