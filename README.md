@@ -1,10 +1,10 @@
 # Automated-office
 
-**This is a python script I use in my office work. I wrote these scripts for different situations and combined with GPT.**
+**This is a python script I use in my work. I wrote these scripts for different situations and combined with GPT.**
 
-These are scripts I wrote about practical problems I encountered in my actual work. If they help you, I will be very happy.
+Non-programming major, these are automation scripts I wrote for real problems I encountered at work. If it really helps you, please light a star for me. I will continue to update and improving.
 Most of the main work is related to images and data information, so the scripts are written around these areas.
-All scripts are created based on python language. If you are a novice, please install the python library first and add it to your environment variables
+All scripts are created based on python language. If you are a novice, please install the python library first and add it to your environment variables. 
 
 python installation address：https://www.python.org/
 Find "Downloads", select the environment that suits you and click download (it is recommended to download the latest version)
