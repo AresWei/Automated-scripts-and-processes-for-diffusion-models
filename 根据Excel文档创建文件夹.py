@@ -49,8 +49,8 @@ def rename_folders_to_english_only(base_path):
     print("Folder renaming process completed.")
 
 # Example usage
-excel_file_path = r"C:\Users\WUJIE-A\Desktop\头像模型标签表.xlsx"  # Replace with your Excel file path
-base_path = r"\\192.168.90.90\头像模型\整理后数据\头像v1.5(素材优化版本)"  # Replace with your desired base path
+excel_file_path = r"C:\Users\A\Desktop\AAA.xlsx"  # Replace with your Excel file path
+base_path = r"C:\Users\A\Desktop\AAAAA"  # Replace with your desired base path
 
 create_folders_from_excel(excel_file_path, base_path)
 rename_folders_to_english_only(base_path)
