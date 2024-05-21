@@ -1,3 +1,4 @@
+# Function: Process and rename image files in the specified directory. Users can specify new file names by editing Excel files. The program will handle duplicate names and display the processing progress.
 import os
 import re
 import pandas as pd
