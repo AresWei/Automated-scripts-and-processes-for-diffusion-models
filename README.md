@@ -1,4 +1,4 @@
-# Automated-office
+# Automated Scripts And Processes For Diffusion Models
 
 **This is a python script I use in my work. I wrote these scripts for different situations and combined with GPT.**
 
