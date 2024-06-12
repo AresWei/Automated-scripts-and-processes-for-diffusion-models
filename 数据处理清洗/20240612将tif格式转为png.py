@@ -6,6 +6,9 @@ def convert_tiff_to_png(source_folder, target_folder):
     """
     将指定文件夹中的所有TIF或TIFF格式图片转换为PNG格式，并保存在目标文件夹。
     """
+    # 增加Pillow的图像尺寸限制
+    Image.MAX_IMAGE_PIXELS = None
+
     # 检查目标文件夹是否存在，如果不存在则创建
     if not os.path.exists(target_folder):
         os.makedirs(target_folder)
@@ -28,6 +31,9 @@ def convert_tiff_to_png(source_folder, target_folder):
 
         # 打开并转换图像
         with Image.open(file_path) as img:
+            # 如果原图是CMYK模式，转换为RGB
+            if img.mode == 'CMYK':
+                img = img.convert('RGB')
             img.save(target_file_path, "PNG")
 
     print("所有文件转换完毕！")
