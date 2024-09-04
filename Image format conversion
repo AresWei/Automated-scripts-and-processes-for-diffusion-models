@@ -1,0 +1,70 @@
+import os
+from PIL import Image
+from tqdm import tqdm
+
+
+def convert_images(input_path, output_format):
+    """
+    Converts all image files in the specified directory to the desired format.
+
+    Parameters:
+    input_path (str): The path to the directory containing images.
+    output_format (str): The desired output image format (e.g., 'JPEG', 'PNG', 'BMP', 'TIFF', 'GIF', 'WEBP').
+    """
+
+    # Ensure the input path exists
+    if not os.path.exists(input_path):
+        print(f"The specified path {input_path} does not exist.")
+        return
+
+    # Supported image formats by Pillow (PIL)
+    supported_formats = ['JPEG', 'PNG', 'BMP', 'TIFF', 'GIF', 'WEBP']
+
+    # Check if the desired format is supported
+    if output_format.upper() not in supported_formats:
+        print(f"Unsupported format: {output_format}. Supported formats are: {', '.join(supported_formats)}")
+        return
+
+    # Create an output directory to store converted images
+    output_path = os.path.join(input_path, "converted_images")
+    os.makedirs(output_path, exist_ok=True)
+
+    # Get all image files in the directory
+    image_files = [f for f in os.listdir(input_path) if os.path.isfile(os.path.join(input_path, f))]
+
+    # Filter image files by their format, include .jpg as JPEG
+    image_files = [f for f in image_files if
+                   Image.open(os.path.join(input_path, f)).format in supported_formats or f.lower().endswith('.jpg')]
+
+    # Convert and save images with progress bar
+    for image_file in tqdm(image_files, desc="Converting images"):
+        # Open the image
+        img = Image.open(os.path.join(input_path, image_file))
+
+        # Extract the file name without extension
+        base_name = os.path.splitext(image_file)[0]
+
+        # Generate the new file name with the desired format
+        new_file_name = f"{base_name}.{output_format.lower()}"
+        new_file_path = os.path.join(output_path, new_file_name)
+
+        # Handle name conflicts by appending a number
+        counter = 1
+        while os.path.exists(new_file_path):
+            new_file_name = f"{base_name}({counter}).{output_format.lower()}"
+            new_file_path = os.path.join(output_path, new_file_name)
+            counter += 1
+
+        # Save the image in the new format
+        img.save(new_file_path, output_format)
+
+    print(f"Conversion complete. Converted images are saved in: {output_path}")
+
+
+if __name__ == "__main__":
+    # User input for directory path and desired format
+    input_dir = input("Enter the directory path containing images: ")
+    desired_format = input(
+        "Enter the desired output format (e.g., 'JPEG', 'PNG', 'BMP', 'TIFF', 'GIF', 'WEBP'): ").upper()
+
+    convert_images(input_dir, desired_format)
